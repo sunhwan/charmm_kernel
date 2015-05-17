@@ -1,0 +1,7 @@
+{
+ "argv": ["python", "-m", "charmm_kernel",
+          "-f", "{connection_file}"],
+ "display_name": "CHARMM",
+ "language": "python",
+ "env": {"PYTHONPATH":"/Users/sunhwan/work/misc/charmm_kernel"}
+}

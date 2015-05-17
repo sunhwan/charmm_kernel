@@ -6,6 +6,8 @@ _charmm_data = '/Users/sunhwan/local/charmm/toppar'
 _s = re.compile('\s+')
 
 class CHARMM:
+    is_running = False
+
     def __init__(self, output=None, exe=_charmm_exec):
         self._pid = sp.Popen(exe, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, universal_newlines=True)
         (self._in, self._out) = (self._pid.stdin, self._pid.stdout)
@@ -17,6 +19,7 @@ class CHARMM:
         self.output = output
         self.getCharmmOutput('_INIT')
         self.params = {}
+        self.is_running = True
 
     def __del__(self):
         try:
@@ -40,6 +43,7 @@ read para card name %s""" % (top, par))
         energy = False
         while 1:
             line = self._out.readline()
+            line_stripped = line.strip()
             if not line: return
             if line.strip().endswith(exp):
                 return
@@ -70,7 +74,7 @@ read para card name %s""" % (top, par))
                                 self.energy[energy_header[i]] = float(n)
                                 i += 1
             # PARAMETER
-            if line.startswith(' Parameter:'):
+            if line_stripped.startswith('Parameter:'):
                 entries = line.strip().split()
                 k,v = entries[1].lower(), entries[3][1:-1]
                 if v.isdigit():
@@ -80,6 +84,9 @@ read para card name %s""" % (top, par))
                         self.params[k] = float(v)
                     except:
                         self.params[k] = v
+            # termination
+            if line_stripped.startswith('Execution terminated'):
+                self.is_running = False
 
     def sendCommand(self, cmd):
         if not self.lastOutput: 
